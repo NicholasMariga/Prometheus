@@ -1,36 +1,36 @@
 PROMETHEUS WITHOUT DOCKER
 
 //Update your server first
-# apt update -y
+apt update -y
 
 //Create user prometheus
-# sudo useradd --no-create-home --shell /bin/false prometheus
+sudo useradd --no-create-home --shell /bin/false prometheus
 
 //Download zipped file from official prometheus website
-# wget prometheus......*.tar.gz 
+wget prometheus......*.tar.gz 
 
 
 //Extract the file
-# tar -xvf prometheus......*.tar.gz
+tar -xvf prometheus......*.tar.gz
 
 
 //Change directory to the extracted one
-# cd prometheus......*
+cd prometheus......*
 
 //Create Necessary Directories
-# mkdir /etc/prometheus /var/lib/prometheus
+mkdir /etc/prometheus /var/lib/prometheus
 
 //Copy Binaries 
-# cp prometheus promtool /usr/local/bin
-# cp -r prometheus.yml consoles console_libraries /etc/prometheus
+cp prometheus promtool /usr/local/bin
+cp -r prometheus.yml consoles console_libraries /etc/prometheus
 
 
 //Change Ownership
-# chown -R prometheus.prometheus /etc/prometheus/
-# chown -R prometheus.prometheus /var/lib/prometheus
+chown -R prometheus.prometheus /etc/prometheus/
+chown -R prometheus.prometheus /var/lib/prometheus
 
 //Update the targets in prometheus.yml to the right server details
-# vi /etc/prometheus/prometheus.yml
+vi /etc/prometheus/prometheus.yml
 global:
   scrape_interval: 5s
   evaluation_interval: 1m
@@ -42,7 +42,7 @@ scrape_configs:
 
 
 //Create a deamon service, to start prometheus onboot
-# vi /etc/systemd/system/prometheus.service
+vi /etc/systemd/system/prometheus.service
 [Unit]
 Description=Prometheus
 Wants=network-online.target
@@ -71,9 +71,9 @@ WantedBy=multi-user.target
 
 // Enable and Start Prometheus Service
 
-# systemctl daemon-reload
-# systemctl enable prometheus
-# systemctl start prometheus
+systemctl daemon-reload
+systemctl enable prometheus
+systemctl start prometheus
 
 //On your Browser
 ip-address:9090

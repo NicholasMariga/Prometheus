@@ -1,27 +1,27 @@
 PROMETHEUS USING DOCKER
 
 //Update your server first
-# apt update -y
+apt update -y
 
 //Install docker 
-# apt install -y docker.io
+apt install -y docker.io
 
 //Create user prometheus
-# sudo useradd --no-create-home --shell /bin/false prometheus
+sudo useradd --no-create-home --shell /bin/false prometheus
 
 //Create Necessary Directories
-# mkdir /etc/prometheus
+mkdir /etc/prometheus
 
 //Create yaml file and directory for prometheus to map while creating docker container
-# touch /etc/prometheus/prometheus.yml
-# mkdir -p /data/prometheus 
+touch /etc/prometheus/prometheus.yml
+mkdir -p /data/prometheus 
 
 //Change Ownership
-# chown -R prometheus.prometheus /etc/prometheus/
-# chown -R prometheus.prometheus /data/prometheus
+chown -R prometheus.prometheus /etc/prometheus/
+chown -R prometheus.prometheus /data/prometheus
 
 //Update the targets in prometheus.yml to the right server details
-# vi /etc/prometheus/prometheus.yml
+vi /etc/prometheus/prometheus.yml
 global:
   scrape_interval: 5s
   evaluation_interval: 1m
@@ -32,13 +32,13 @@ scrape_configs:
       - targets: ['localhost:9090']
 
 //get user prometheus id to use it while running docker container
-# cat /etc/passwd | grep prometheus    
+cat /etc/passwd | grep prometheus    
 
 //Execute docker
-# docker run --name  prometheus -d -p 9090:9090  --user 998:998 --net=host -v /etc/prometheus:/etc/prometheus -v /data/prometheus:/data/prometheus prom/prometheus --config.file="/etc/prometheus/prometheus.yml" --storage.tsdb.path="/data/prometheus"
+docker run --name  prometheus -d -p 9090:9090  --user 998:998 --net=host -v /etc/prometheus:/etc/prometheus -v /data/prometheus:/data/prometheus prom/prometheus --config.file="/etc/prometheus/prometheus.yml" --storage.tsdb.path="/data/prometheus"
 
 //Update running docker container to always start on docker restart
-# docker update --restart always  <container>
+docker update --restart always  container-id
 
 //On your Browser
 ip-address:9090`
