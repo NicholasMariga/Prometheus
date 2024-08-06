@@ -26,8 +26,8 @@ PROMETHEUS WITHOUT DOCKER
 
 
 //Change Ownership
-# chown prometheus.prometheus /etc/prometheus/
-# chown prometheus.prometheus /var/lib/prometheus
+# chown -R prometheus.prometheus /etc/prometheus/
+# chown -R prometheus.prometheus /var/lib/prometheus
 
 //Update the targets in prometheus.yml to the right server details
 # vi /etc/prometheus/prometheus.yml
@@ -74,3 +74,6 @@ WantedBy=multi-user.target
 # systemctl daemon-reload
 # systemctl enable prometheus
 # systemctl start prometheus
+
+//On your Browser
+<ip-address>:9090`
