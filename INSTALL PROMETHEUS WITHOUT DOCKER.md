@@ -76,4 +76,4 @@ WantedBy=multi-user.target
 # systemctl start prometheus
 
 //On your Browser
-<ip-address>:9090`
+ip-address:9090

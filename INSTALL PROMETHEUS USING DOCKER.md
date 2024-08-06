@@ -41,4 +41,4 @@ scrape_configs:
 # docker update --restart always  <container>
 
 //On your Browser
-<ip-address>:9090`
+ip-address:9090`
