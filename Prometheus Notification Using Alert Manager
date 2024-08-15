@@ -1,0 +1,141 @@
+Install and Configure Alert Manager For Notification
+
+Create Alert Manager User
+	sudo useradd --no-create-home --shell /bin/false alertmanager
+
+Download and Extract Alert Manager
+	wget https://github.com/prometheus/alertmanager/releases/download/v0.24.0/alertmanager-0.24.0.linux-amd64.tar.gz
+	
+Extract downloaded alertmanager
+	tar xzvf alertmanager-0.24.0.linux-amd64.tar.gz
+
+Change directory to the extracted directory
+	cd alertmanager-0.24.0.linux-amd64
+
+Copy Binaries
+	cp alertmanager amtool /usr/local/bin
+
+Create Necessary Directories
+	sudo mkdir -p /etc/alertmanager/templates /var/lib/alertmanager
+
+Change ownership of the created directories
+	sudo chown alertmanager.alertmanager /var/lib/alertmanager
+
+Create Alert Manager Configuration
+	sudo vi /etc/alertmanager/alertmanager.yml
+		global:
+		 resolve_timeout: 1m
+
+		route:
+		  group_by: ['alertname']
+		  group_wait: 30s
+		  group_interval: 5m
+		  repeat_interval: 10m
+		  receiver: 'email-notifications'
+
+		receivers:
+		- name: 'email-notifications'
+		  email_configs:
+		  - to: your-email@gmail.com
+		    from: your-email@gmail.com
+		    smarthost: smtp.gmail.com:587
+		    auth_username: your-email@gmail.com
+		    auth_identity: your-email@gmail.com
+		    auth_password: ovdmaojaizbxjocy - this is app password
+		    send_resolved: true
+
+
+
+Create Alert Manager Systemd Service
+	sudo vi /etc/systemd/system/alertmanager.service
+		[Unit]
+		Description=Alertmanager
+		Wants=network-online.target
+		After=network-online.target
+		[Service]
+		User=alertmanager
+		Group=alertmanager
+		Type=simple
+		ExecStart=/usr/local/bin/alertmanager \
+		--config.file /etc/alertmanager/alertmanager.yml \
+		--storage.path /var/lib/alertmanager
+		Restart=always
+		[Install]
+		WantedBy=multi-user.target
+
+
+Enable and Start Alert Manager Service
+
+sudo systemctl daemon-reload
+sudo systemctl enable alertmanager
+sudo systemctl start alertmanager
+
+
+
+#### Alerting rules  ####
+
+vi /etc/prometheus/alert.rules.yml
+
+groups:
+- name: alert.rules
+  rules:
+  - alert: Down
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: "critical"
+    annotations:
+      summary: "Endpoint {{ $labels.instance }} down"
+      description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minutes."
+
+  - alert: HostOutOfMemory
+    expr: node_memory_MemAvailable / node_memory_MemTotal * 100 < 25
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of memory (instance {{ $labels.instance }})"
+      description: "Node memory is filling up (< 25% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: HostOutOfDiskSpace
+    expr: (node_filesystem_avail{mountpoint="/"}  * 100) / node_filesystem_size{mountpoint="/"} < 50
+    for: 1s
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host out of disk space (instance {{ $labels.instance }})"
+      description: "Disk is almost full (< 50% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+  - alert: HostHighCpuLoad
+    expr: (sum by (instance) (irate(node_cpu{job="node_exporter_metrics",mode="idle"}[5m]))) > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Host high CPU load (instance {{ $labels.instance }})"
+      description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+
+#### Integrate with prometheus ####
+
+Add the following in prometheus.yml configuration file
+
+vi /etc/prometheus/prometheus.yml
+
+	# Alertmanager configuration
+	alerting:
+	  alertmanagers:
+	    - static_configs:
+	        - targets:
+	           - '<server-ip-where-alertmanager-is-setup>:9093'
+
+
+	# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+	rule_files:
+	  - alert.rules.yml
+
+
+
+	
